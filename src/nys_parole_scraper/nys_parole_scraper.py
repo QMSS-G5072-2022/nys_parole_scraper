@@ -18,7 +18,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import scraper_functions as sf
 from selenium.webdriver.firefox.options import Options
 
-
 def parole_scraper(file_path, dir2): 
     """
     Scrapes NYS parole information from the NYS DOCCS parolee lookup website 
@@ -731,7 +730,7 @@ def parole_scraper(file_path, dir2):
     full_output.to_csv(output_dir + '/parole_full_output_'+ dyn_dir_name +'.csv', index=False, encoding="utf-8")
     
     #reset index
-    full_output - full_output.reset_index()
+    
     
     #=============================================================================
     # SUMMARY STATISTICS
