@@ -16,8 +16,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from nys_parole_scraper import scraper_functions as sf
-# changed from just " import scraper_functions as sf "
-### making this change, and moving all files from src>nys_parole_scraper to just src, and then importing scraper as "from  nys_parole_scraper.nys_parole_scraper import parole_scraper" (alternatively could do "from nys_scraper import nys_scraper" and then use nys_scraper.parole_scraper as function call). This change allows both this to work as well as pytest
 from selenium.webdriver.firefox.options import Options
 
 def parole_scraper(file_path, directory): 
@@ -739,7 +737,6 @@ def parole_scraper(file_path, directory):
 
     # summary stats on continuous variables
     global stats_numeric
-    stats_numeric.style.set_caption("Numeric Summary Stats")
     stats_numeric = full_output[["Age:", "Months Since Release:","Total Convictions"]].describe().loc[['count','min','mean','max']]
     
     # create age bins
@@ -748,8 +745,7 @@ def parole_scraper(file_path, directory):
     output_stats['age_bin']=pd.cut(output_stats['Age:'],bins,labels=group_names).astype(object)
     
     global age_freq
-    age_freq.style.set_caption("Age Frequency")
-    age_freq = sf.freq_table(output_stats, "age_bin", "Age")
+    age_freq = sf.freq_table(output_stats, "age_bin")
     
     # get frequency of unique individuals with cases in different counties
     county_list = ['County 1',
@@ -769,9 +765,7 @@ def parole_scraper(file_path, directory):
     counties = [item for item in counties if item != ""]
     
     global county_unique_freq
-    county_unique_freq.style.set_caption("Frequency of Unique Individuals per County of Conviction")
     county_unique_freq = pd.DataFrame(columns=['Count', '%'], index = counties)
-    county_unique_freq.index.rename("Counties_All Convictions")
     for county in counties:
         output_stats[county+'_unique'] = output_stats[['County 1',
                 'County 2', 
@@ -789,15 +783,21 @@ def parole_scraper(file_path, directory):
         county_unique_freq.loc[county].Count = c
         county_unique_freq.loc[county]['%'] = p
     
+    # Freqency table for parole officer info provided
+    # Yes/No for parole officer info
+    output_stats['Officer Info Provided'] = np.where(
+        output_stats['Senior Parole Officer:'].notnull, 'Yes', 'No')
+    
+    global officer_freq
+    officer_freq = sf.freq_table(output_stats, 'Officer Info Provided')
+    
     # frequency tables for race/ethnicity
     global race_freq
-    race_freq.style.set_caption("Race/Ethnicity Frequency")
-    race_freq = sf.freq_table(output_stats, "Race / ethnicity:", "Race/Ethnicity")
+    race_freq = sf.freq_table(output_stats, "Race / ethnicity:")
     
     # frequency tables for parole status
     global pstatus_freq
-    pstatus_freq.style.set_caption("Status Frequency")
-    pstatus_freq = sf.freq_table(output_stats, "Parole status:", "Parole Status")
+    pstatus_freq = sf.freq_table(output_stats, "Parole status:")
     
     
     # get counts of charges
@@ -818,9 +818,7 @@ def parole_scraper(file_path, directory):
     convictions = [item for item in convictions if item != ""]
 
     global convictions_freq
-    convictions_freq.index.rename("All Convictions")
     convictions_freq = pd.DataFrame(columns=['Count', '%'], index = convictions)
-    convictions_freq.style.set_caption("Frequency of Unique Individuals per Charge Type")
     for conv in convictions:
         output_stats[conv+'_unique'] = output_stats[['Crime of conviction 1',
                 'Crime of conviction 2', 
@@ -840,8 +838,7 @@ def parole_scraper(file_path, directory):
     
     #get top charge (crime of conviction #1) fequency table
     global top_charge_freq
-    top_charge_freq.style.set_caption("Top Charge Frequency")
-    top_charge_freq = sf.freq_table(output_stats, 'Crime of conviction 1', "Top Charge")
+    top_charge_freq = sf.freq_table(output_stats, 'Crime of conviction 1')
 
     
     ##### Export --------------------------------------------------------------
@@ -857,6 +854,7 @@ def parole_scraper(file_path, directory):
     county_unique_freq.to_excel(writer, sheet_name='Unique People per County')
     top_charge_freq.to_excel(writer, sheet_name='Top Charge')
     convictions_freq.to_excel(writer, sheet_name='Unique People per Charge Type')
+    officer_freq.to_excel(writer, sheet_name='P.O. Info Provided')
     
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
@@ -868,7 +866,8 @@ def parole_scraper(file_path, directory):
                   pstatus_freq, 
                   county_unique_freq,
                   top_charge_freq,
-                  convictions_freq]
+                  convictions_freq,
+                  officer_freq]
     
     return full_output, stats_list
     

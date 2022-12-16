@@ -13,7 +13,7 @@ This package was created to aid in the data collection efforts of service provid
 This package depends on using a headless Firefox browser. Make sure Firefox is installed on your computer before proceeding. Click [here](https://www.mozilla.org/en-US/firefox/new/?utm_medium=paidsearch&utm_source=google-rsa&utm_campaign=firefox-for-families&utm_content=A144_A203_301421&gclid=Cj0KCQiAqOucBhDrARIsAPCQL1Y1mhZc-bWiI1LXtW6IwfMGvn0WNIB4EV4x_A6z_9Sc8DHNEjDXL3YaAud1EALw_wcB) to download if you don't have it already. 
 
 ### Install Geckodriver and add to your Path variables
-This package depends on 
+This package depends on installing Geckodriver and adding it your PATH variables in order to use Selnium for webscraping. Download Geckodriver [here](https://github.com/mozilla/geckodriver/releases) and see [here](https://www.softwaretestinghelp.com/geckodriver-selenium-tutorial/) for more information about Geckodriver and instructions on adding it to your PATH variables. 
 
 
 ## Installation
@@ -69,6 +69,7 @@ from nys_parole_scraper import parole_scraper
 
 file_path = "C:/Users/parole_scraping/client_info.csv"
 dir = "C:/Users/parole_scraping/Output_Folder"
+
 parole_scraper(file_path, dir)
 ```
 This will export a CSV file with all scraped data collected and an Excel file with summary statistics to a new timestamped folder in the designated directory. Output will also be returned in the console. 
@@ -80,6 +81,7 @@ from nys_parole_scraper import parole_scraper
 
 file_path = "C:/Users/parole_scraping/client_info.csv"
 dir = "C:/Users/parole_scraping/Output_Folder"
+
 full_output, stats_list = parole_scraper(file_path, dir)
 ```
 

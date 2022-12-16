@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: khayes
+Created on Wed Dec 14 19:45:10 2022
+
+@author: khaye
 """
 import pandas as pd
 from selenium.webdriver.common.by import By
@@ -134,9 +136,8 @@ def new_search(driver, wait):
 #==========================================================
 # DEFINE FREQUENCY TABLE FUNCTION
 #==========================================================
-def freq_table(df, column, index_name):
+def freq_table(df, column):
     c = df[column].value_counts(dropna=False)
     p = df[column].value_counts(dropna=False, normalize=True).mul(100).round(1).astype(str) + '%'
     df_new = pd.concat([c,p], axis=1, keys=['Count', '%'])
-    df_new.index.rename(index_name, inplace=True) 
     return df_new
