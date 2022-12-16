@@ -65,25 +65,95 @@ There are two potential ways to use the package.
 If you are only interested in the CSV and Excel output of the scraped parole data and the summary statistics, you can do as follows: 
 
 ```
-from nys_parole_scraper import parole_scraper
+from nys_parole_scraper import nys_parole_scraper
 
 file_path = "C:/Users/parole_scraping/client_info.csv"
 dir = "C:/Users/parole_scraping/Output_Folder"
 
-parole_scraper(file_path, dir)
+nys_parole_scraper.parole_scraper(file_path, dir)
 ```
 This will export a CSV file with all scraped data collected and an Excel file with summary statistics to a new timestamped folder in the designated directory. Output will also be returned in the console. 
 
 If you want to explore, analyze, or modify the data  using python, and would like the output returned as python objects, you can assign the function to two variables, the first being the scraped output and the second being a list that will contain the summary statistic dataframes. For example: 
 
 ```
-from nys_parole_scraper import parole_scraper
+from nys_parole_scraper import nys_parole_scraper
 
 file_path = "C:/Users/parole_scraping/client_info.csv"
 dir = "C:/Users/parole_scraping/Output_Folder"
 
-full_output, stats_list = parole_scraper(file_path, dir)
+full_output, stats_list = nys_parole_scraper.parole_scraper(file_path, dir)
 ```
+
+#### freq_table
+While it is not the primary use of the nys_parole_scraper package, there is another function available for use on the full_output dataframe: freq_table(), available in the scraper_functions module of the nys_parole_scraper package, which allows for quick generation of any categorical variables in the output data. 
+
+Parameters: freq_table(df, column, col_name)
+- df: the pandas DataFrame containing the scraped parole output. In the example above, this is "full_output"
+- column: a string; the name of the categorical column you would like to create a frequency table for
+- index_name: a string; what you would like to name the column of categories
+
+```
+from nys_parole_scraper import scraper_functions as sf
+
+conv_1_class_freq = sf.freq_table(full_output, "Class 1", "Conviction 1 Classes")
+```
+
+
+### parole_scraper Output Descriptions
+
+##### The Parole Data
+The scraped parole data, which will upload to your generated Output directory in the directory path provided as a parameter, will include the following information scraped from the DOCCS Parole Lookup site. 
+- ID: the unique ID provided by the package user in the csv file input; blank if not provided
+- DIN (Department Identification Number): a unique ID used by DOCCS
+- Name
+- Date of Brith
+- Age (calculated by the package; not directly available on DOCCS site)
+- Race/ethnicity
+- Release to Parole supervision (date)
+- Months Since Release (calculated by the package; not directly available on DOCCS site)
+- Parole Status
+- Effective Date
+- Senior Parole Officer
+- Parole Officer
+- Office (of P.O)
+- Street (of P.O)
+- City (of P.O)
+- Phone (of P.O)
+- Crime of Conviction 1 through Crime of Conviction 10 
+- Class 1 through 10 (class of conciviciton charge)
+- County 1 through 10 (county of conviction)
+- Date Info Scraped (the date of package use; not available on DOCCS site)
+
+Where a value is blank for an individual, that information was not available on the individual's DOCCS parole page. 
+
+for more detailed information and definitions of the data provided by the DOCCS Parole Lookup, please see the [DOCCS Parolee Lookup Glossary.](https://publicapps.doccs.ny.gov/ParoleeLookup/About?form=glossary)
+
+
+##### The Summary Statistics
+The summary statistics Excel file will contain sheets with the following names/data: 
+
+Summary Statistics: 
+- summary statistics (min, mean, and max) of continuous variables age, months since release to parole (from current date of package run), and total convictions
+
+Age: 
+- Frequency table (count and %) of age categories: < 20, 21-30, 31-40, 41-50, 51-60 > 60 
+
+Race.Ethnicity: 
+- Frequency table (count and %) of race/ethnicity
+
+Parole Status: 
+- Frequency table (count and %) of current parole status. Categories may include, but are not limited to: discharged, active, in custody,  revoked, absconded, and deceased.
+
+Unique people per County
+- Frequency table (count and %) of unique individuals with a conviction in the county. Note that because individuals may have multiple convictions, all in different counties, and that this is counting the unique individuals with a conviction in each county rather than the count of counties out of total convictions, this table will likely add to more than 100%.
+
+Top charge
+- Frequency table (count and %) of top charge (crime of convction 1)
+
+Unique People per Charge Type
+- Frequency table (count and %) of unique individuals per conviction charge type (e.g.: attempted robbery in the 2nd). Note that because individuals may have multiple convictions, and that this is counting the unique individuals with a specific charge type rather than the count of each charge type out of all convictions, this table will likely add to more than 100%.
+
 
 ## Contributing
 

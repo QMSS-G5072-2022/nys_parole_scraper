@@ -75,9 +75,13 @@ def parole_scraper(file_path, directory):
             county_unique_freq : pandas DataFrame
                 Frequency table of unique individuals with convictions in each county
                 
-            officer_freq : pandas DataFrame
-                Frequency table of officer information available, Y/N
-        
+            top_charge_freq : pandas DataFrame
+                Frequency table of top charges
+                
+            convictions_freq : pandas DataFrame
+                Frequency table of unique individuals per charge type (every
+                conviction, not only top charge)
+                        
     Example
     -------- 
     Returning DataFrames as objects: 
@@ -685,10 +689,11 @@ def parole_scraper(file_path, directory):
         full_output[col] = full_output[col].astype(str).str.title()
     
     # Add column indicating day data was scraped
-    full_output["Date Info Scraped:"] = today_str
-
-    #Turn dob and release date into datetime objects so that we can perform calculations
-    full_output[["Date of birth:", "Release to parole supervision:"]]= full_output[["Date of birth:", "Release to parole supervision:"]].astype('datetime64[ns]')
+    full_output["Date Info Scraped:"] = today #today_str !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+    # #Turn dates into datetime objects 
+    # full_output[["Date of birth:", "Release to parole supervision:"]]= full_output[["Date of birth:", "Release to parole supervision:"]].astype('datetime64[ns]')
+    full_output[["Date of birth:", "Release to parole supervision:", "Effective date:"]]= full_output[["Date of birth:", "Release to parole supervision:","Effective date:"]].astype('datetime64[ns]')
     
     # Add age column
     idob = full_output.columns.get_loc("Date of birth:") # get index location of DOB
@@ -728,6 +733,12 @@ def parole_scraper(file_path, directory):
     full_output['ID'] = np.where(
         full_output['ID'] == "nan", '', full_output['ID'])
     
+    # make new dataframe for summary stats
+    output_stats = full_output.copy()
+    
+    # change empoty spaces back to nans
+    full_output = full_output.replace(r'^\s*$', np.nan, regex=True)
+    
     #export to csv
     full_output.to_csv(output_dir + '/parole_full_output_'+ dyn_dir_name +'.csv', index=False, encoding="utf-8")
         
@@ -735,11 +746,10 @@ def parole_scraper(file_path, directory):
     #=============================================================================
     # SUMMARY STATISTICS
     #=============================================================================
-    output_stats = full_output.copy()
+    
 
     # summary stats on continuous variables
     global stats_numeric
-    stats_numeric.style.set_caption("Numeric Summary Stats")
     stats_numeric = full_output[["Age:", "Months Since Release:","Total Convictions"]].describe().loc[['count','min','mean','max']]
     
     # create age bins
@@ -748,7 +758,6 @@ def parole_scraper(file_path, directory):
     output_stats['age_bin']=pd.cut(output_stats['Age:'],bins,labels=group_names).astype(object)
     
     global age_freq
-    age_freq.style.set_caption("Age Frequency")
     age_freq = sf.freq_table(output_stats, "age_bin", "Age")
     
     # get frequency of unique individuals with cases in different counties
@@ -769,9 +778,9 @@ def parole_scraper(file_path, directory):
     counties = [item for item in counties if item != ""]
     
     global county_unique_freq
-    county_unique_freq.style.set_caption("Frequency of Unique Individuals per County of Conviction")
     county_unique_freq = pd.DataFrame(columns=['Count', '%'], index = counties)
-    county_unique_freq.index.rename("Counties_All Convictions")
+    county_unique_freq.index.rename("Counties All Convictions", inplace = True)
+    
     for county in counties:
         output_stats[county+'_unique'] = output_stats[['County 1',
                 'County 2', 
@@ -788,15 +797,14 @@ def parole_scraper(file_path, directory):
         p = str(round((c/len(output_stats.index))*100, 1))+ '%'
         county_unique_freq.loc[county].Count = c
         county_unique_freq.loc[county]['%'] = p
-    
+    county_unique_freq.reset_index(inplace = True)
+
     # frequency tables for race/ethnicity
     global race_freq
-    race_freq.style.set_caption("Race/Ethnicity Frequency")
     race_freq = sf.freq_table(output_stats, "Race / ethnicity:", "Race/Ethnicity")
     
     # frequency tables for parole status
     global pstatus_freq
-    pstatus_freq.style.set_caption("Status Frequency")
     pstatus_freq = sf.freq_table(output_stats, "Parole status:", "Parole Status")
     
     
@@ -818,9 +826,9 @@ def parole_scraper(file_path, directory):
     convictions = [item for item in convictions if item != ""]
 
     global convictions_freq
-    convictions_freq.index.rename("All Convictions")
     convictions_freq = pd.DataFrame(columns=['Count', '%'], index = convictions)
-    convictions_freq.style.set_caption("Frequency of Unique Individuals per Charge Type")
+    convictions_freq.index.rename("Charges All Convictions", inplace = True)
+    
     for conv in convictions:
         output_stats[conv+'_unique'] = output_stats[['Crime of conviction 1',
                 'Crime of conviction 2', 
@@ -837,10 +845,10 @@ def parole_scraper(file_path, directory):
         p = str(round((c/len(output_stats.index))*100, 1))+ '%'
         convictions_freq.loc[conv].Count = c
         convictions_freq.loc[conv]['%'] = p
+    convictions_freq.reset_index(inplace = True)
     
     #get top charge (crime of conviction #1) fequency table
     global top_charge_freq
-    top_charge_freq.style.set_caption("Top Charge Frequency")
     top_charge_freq = sf.freq_table(output_stats, 'Crime of conviction 1', "Top Charge")
 
     
@@ -850,13 +858,15 @@ def parole_scraper(file_path, directory):
     writer = pd.ExcelWriter(output_dir + '/summary_statistics_'+ dyn_dir_name + '.xlsx', engine='xlsxwriter')
     
     # Write each dataframe to a different worksheet.
-    stats_numeric.to_excel(writer, sheet_name='Summary Statistics')
-    age_freq.to_excel(writer, sheet_name='Age')
-    race_freq.to_excel(writer, sheet_name='Race.Ethnicity')
-    pstatus_freq.to_excel(writer, sheet_name='Parole Status')
-    county_unique_freq.to_excel(writer, sheet_name='Unique People per County')
-    top_charge_freq.to_excel(writer, sheet_name='Top Charge')
-    convictions_freq.to_excel(writer, sheet_name='Unique People per Charge Type')
+    stats_numeric.to_excel(writer, sheet_name='Summary Statistics', index = False)
+    age_freq.to_excel(writer, sheet_name='Age', index = False)
+    race_freq.to_excel(writer, sheet_name='Race.Ethnicity', index = False)
+    pstatus_freq.to_excel(writer, sheet_name='Parole Status', index = False)
+    county_unique_freq.to_excel(writer, sheet_name='Unique People per County', 
+                                index = False)
+    top_charge_freq.to_excel(writer, sheet_name='Top Charge', index = False)
+    convictions_freq.to_excel(writer, sheet_name='Unique People per Charge Type',
+                              index = False)
     
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()

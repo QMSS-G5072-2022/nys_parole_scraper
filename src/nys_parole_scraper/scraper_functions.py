@@ -134,9 +134,75 @@ def new_search(driver, wait):
 #==========================================================
 # DEFINE FREQUENCY TABLE FUNCTION
 #==========================================================
-def freq_table(df, column, index_name):
+def freq_table(df, column, col_name):
+    """
+    Create a  frequency table.
+    
+    Parameters
+    ----------
+    df : pandas DataFrame
+        the dataFrame witht he data you would like to create a frequency table of
+        
+    column : String
+        The column in the dataframe you would like to make a frequency table of.
+        
+    col_name : String
+        The name you would like to give to the first column of the returned DataFrame
+
+
+    Returns
+    -------
+    To return the following python objects as DataFrames, assign the function to 
+    two variables (ex: df1, df2 = parole_scraper(file_path, directory)). To only export 
+    the dataframes to the provided directory, you do not need to assign the 
+    function to variables (ex: parole_scraper(file_path, directory))
+    
+    df : console output or pandas DataFrame if assigned to variable
+                
+    Example
+    -------- 
+    Returning DataFrames object: 
+    >>> from nys_parole_scraper import scraper_functions as sf
+    >>> data = {'animal':['Cat', 'Dog', 'Cat', 'Dog', 'Bird'],
+            'color':['Grey', 'Brown', 'Black', 'Brown', 'White'],
+            'weight' : [1,2,3.4,4,1]
+            }
+    >>> df = pd.DataFrame(data)
+    >>> animal_frequency = sf.freq_table(df, 'animal', 'Animals')
+    animal_frequency
+    
+    Animals | Count  |   %
+    ------------------------
+    Cat     |   2    | 40.0%
+    Dog     |   2    | 40.0%
+    Bird    |   1    | 20.0%
+    
+    
+    Returning frequency table only in console output: 
+    >>> from nys_parole_scraper import scraper_functions as sf
+    >>> data = {'animal':['Cat', 'Dog', 'Cat', 'Dog', 'Bird'],
+            'color':['Grey', 'Brown', 'Black', 'Brown', 'White'],
+            'weight' : [1,2,3.4,4,1]
+            }
+    >>> df = pd.DataFrame(data)
+    >>> sf.freq_table(df, 'animal', 'Animals')
+    
+    Animals | Count  |   %
+    ------------------------
+    Cat     |   2    | 40.0%
+    Dog     |   2    | 40.0%
+    Bird    |   1    | 20.0%
+    
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError('column argument must be a string')
+    if not isinstance(column, str):
+        raise ValueError('column argument must be a string')
+    if not isinstance(col_name, str):
+        raise ValueError('col_name argument must be a string')
     c = df[column].value_counts(dropna=False)
     p = df[column].value_counts(dropna=False, normalize=True).mul(100).round(1).astype(str) + '%'
     df_new = pd.concat([c,p], axis=1, keys=['Count', '%'])
-    df_new.index.rename(index_name, inplace=True) 
+    df_new.index.rename(col_name, inplace=True) 
+    df_new.reset_index(inplace = True)
     return df_new
