@@ -154,6 +154,9 @@ Top charge
 Unique People per Charge Type
 - Frequency table (count and %) of unique individuals per conviction charge type (e.g.: attempted robbery in the 2nd). Note that because individuals may have multiple convictions, and that this is counting the unique individuals with a specific charge type rather than the count of each charge type out of all convictions, this table will likely add to more than 100%.
 
+## Read the Docs
+
+https://nys-parole-scraper.readthedocs.io/en/latest/
 
 ## Contributing
 
