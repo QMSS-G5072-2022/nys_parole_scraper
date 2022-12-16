@@ -5,7 +5,7 @@ A package for scraping parole information from the NYS DOCCS public site.
 Given an input of a csv files with identifying information of individuals (NYSID (New York state ID) or Name and DOB), this package will search for them via the [New York State DOCCS parolee lookup](https://publicapps.doccs.ny.gov/ParoleeLookup/default) and return all parole information, and summary statistics, for the individuals who are found in the system. 
 
 ## Use Case
-This package was created to aid in the data collection efforts of service providers working with justice-involved populations. Organizations who are in need of parole information of their clients/participants to either further their own program design and evaluation or to successfully report to funders can use this package to do so. 
+This package was created to aid in the data collection efforts of service providers working with justice-involved populations in New York State. Organizations that are in need of parole information of their clients/participants to either further their own program design and evaluation or to successfully report to funders can use this package to do so. 
 
 ## Before you start
 
